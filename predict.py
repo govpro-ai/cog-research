@@ -1,4 +1,4 @@
-from cog import BasePredictor, Input, Path
+from cog import BasePredictor, Input, Path, Secret
 import subprocess
 import os
 
@@ -75,18 +75,18 @@ class Predictor(BasePredictor):
     )
 
   async def predict(self,
-    openrouter_api_key: str = Input(description="OpenRouter API key"),
-    searchapi_api_key: str = Input(description="SearchAPI API key"),
+    openrouter_api_key: Secret = Input(description="OpenRouter API key"),
+    searchapi_api_key: Secret = Input(description="SearchAPI API key"),
     query: str = Input(description="Query to research"),
     breadth: int = Input(description="Breadth of research", default=4, ge=2, le=10),
     depth: int = Input(description="Depth of research", default=2, ge=1, le=5),
   ) -> str:
     # Set environment variables
-    os.environ["OPENAI_API_KEY"] = openrouter_api_key
+    os.environ["OPENAI_API_KEY"] = openrouter_api_key.get_secret_value()
     os.environ["OPENAI_API_ENDPOINT"] = "https://openrouter.ai/api/v1"
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
-    os.environ["SEARCHAPI_API_KEY"] = searchapi_api_key
+    os.environ["SEARCHAPI_API_KEY"] = searchapi_api_key.get_secret_value()
     os.environ["SEARCHAPI_ENGINE"] = "google"
     from deep_research_py import deep_research
     # Workers
