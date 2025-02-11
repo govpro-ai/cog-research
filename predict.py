@@ -11,68 +11,78 @@ class Predictor(BasePredictor):
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
 
-    # Source NVM and set up Node environment
-    subprocess.run(
-        'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"',
-        shell=True,
-        executable='/bin/bash'
-    )
-
-    # Debug: Check environment after NVM setup
-    result = subprocess.run("which node",
-        shell=True,
-        capture_output=True,
-        text=True
-    )
-    print("node location:", result.stdout, result.stderr)
-
-    # Use the full path to pnpm from npm global packages
-    pnpm_path = subprocess.run(
-        'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && which pnpm',
+    # Initialize NVM and install Node.js if needed
+    setup_commands = [
+        'export NVM_DIR="$HOME/.nvm"',
+        '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"',  # This loads nvm
+        'nvm install 22',
+        'nvm use 22',
+        'npm install -g pnpm'
+    ]
+    
+    setup_result = subprocess.run(
+        ' && '.join(setup_commands),
         shell=True,
         capture_output=True,
         text=True,
         executable='/bin/bash'
-    ).stdout.strip()
-
-    # Debug: Check if directories and executables exist with explicit output capture
-    result = subprocess.run("ls -la /root/.nvm/versions/node/v22.0.0/bin/",
-      shell=True,
-      capture_output=True,
-      text=True
     )
-    print("ls output:", result.stdout, result.stderr)
-    result = subprocess.run("echo $PATH",
-      shell=True,
-      capture_output=True,
-      text=True
-    )
-    print("PATH output:", result.stdout, result.stderr)
+    
+    print("Setup output:", setup_result.stdout)
+    print("Setup errors:", setup_result.stderr)
 
-    # Update the commands to use the found pnpm path
-    subprocess.run(
-        f"cd firecrawl/apps/api && {pnpm_path} install",
+    # Now get the pnpm path after setup
+    pnpm_result = subprocess.run(
+        'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && which pnpm',
         shell=True,
-        check=True  # This will raise an exception if the command fails
+        capture_output=True,
+        text=True,
+        executable='/bin/bash'
     )
-    # Start background processes
+    
+    if pnpm_result.returncode != 0:
+        print("Error finding pnpm:", pnpm_result.stderr)
+        raise RuntimeError("Failed to find pnpm")
+    
+    pnpm_path = pnpm_result.stdout.strip()
+    print(f"Found pnpm at: {pnpm_path}")
+
+    # Run the install command with the full environment setup
+    install_cmd = f'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && cd firecrawl/apps/api && {pnpm_path} install'
+    install_result = subprocess.run(
+        install_cmd,
+        shell=True,
+        capture_output=True,
+        text=True,
+        executable='/bin/bash'
+    )
+    
+    if install_result.returncode != 0:
+        print("Error during pnpm install:", install_result.stderr)
+        raise RuntimeError("Failed to run pnpm install")
+
+    # Start background processes with the proper environment
+    env_prefix = 'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && '
+    
     # Redis server
     subprocess.Popen(
-        "cd firecrawl && redis-server",
+        f"{env_prefix}cd firecrawl && redis-server",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
+    
     # Workers
     subprocess.Popen(
-        f"cd firecrawl/apps/api && {pnpm_path} run workers",
+        f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run workers",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
+    
     # API server
     subprocess.Popen(
-        f"cd firecrawl/apps/api && {pnpm_path} run start",
+        f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run start",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
