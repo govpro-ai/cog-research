@@ -15,8 +15,7 @@ build:
   run:
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)"
     - chmod +x /usr/local/bin/pget
-    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm install 22 --no-progress
-    - wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && nvm install 22 --no-progress && npm install -g pnpm
     - apt-get update && apt-get install -y redis-server
     - redis-server --daemonize yes
     - curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="/root/.local/bin:$PATH" && /root/.local/bin/uv tool install deep-research-py
