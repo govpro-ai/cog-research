@@ -13,7 +13,7 @@ class Predictor(BasePredictor):
 
     # First run pnpm install and wait for it to complete
     subprocess.run(
-      "cd firecrawl/apps/api && root/.nvm/versions/node/v22.0.0/bin/pnpm install",
+      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm install",
       shell=True,
       check=True  # This will raise an exception if the command fails
     )
@@ -27,14 +27,14 @@ class Predictor(BasePredictor):
     )
     # Workers
     subprocess.Popen(
-      "cd firecrawl/apps/api && root/.nvm/versions/node/v22.0.0/bin/pnpm run workers",
+      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm run workers",
       shell=True,
       stdout=subprocess.DEVNULL,
       stderr=subprocess.DEVNULL
     )
     # API server
     subprocess.Popen(
-      "cd firecrawl/apps/api && root/.nvm/versions/node/v22.0.0/bin/pnpm run start",
+      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm run start",
       shell=True,
       stdout=subprocess.DEVNULL,
       stderr=subprocess.DEVNULL
