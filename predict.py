@@ -6,6 +6,12 @@ from deep_research_py import deep_research
 class Predictor(BasePredictor):
 
   def setup(self):
+    # Set environment variables
+    os.environ["OPENAI_API_KEY"] = "blah"
+    os.environ["OPENAI_ENDPOINT"] = "https://openrouter.ai/api/v1"
+    os.environ["FIRECRAWL_KEY"] = "stub"
+    os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
+
     # First run pnpm install and wait for it to complete
     subprocess.run(
       "cd firecrawl/apps/api && pnpm install",
