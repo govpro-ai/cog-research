@@ -11,10 +11,25 @@ class Predictor(BasePredictor):
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
 
-    # Debug: Check if directories and executables exist
-    subprocess.run("ls -la /root/.nvm/versions/node/v22.0.0/bin/", shell=True)
-    subprocess.run("which pnpm", shell=True)
-    subprocess.run("echo $PATH", shell=True)
+    # Debug: Check if directories and executables exist with explicit output capture
+    result = subprocess.run("ls -la /root/.nvm/versions/node/v22.0.0/bin/",
+      shell=True,
+      capture_output=True,
+      text=True
+    )
+    print("ls output:", result.stdout, result.stderr)
+    result = subprocess.run("which pnpm",
+      shell=True,
+      capture_output=True,
+      text=True
+    )
+    print("which pnpm output:", result.stdout, result.stderr)
+    result = subprocess.run("echo $PATH",
+      shell=True,
+      capture_output=True,
+      text=True
+    )
+    print("PATH output:", result.stdout, result.stderr)
 
     # First run pnpm install and wait for it to complete
     subprocess.run(
