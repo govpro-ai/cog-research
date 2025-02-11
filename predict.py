@@ -1,7 +1,6 @@
 from cog import BasePredictor, Input, Path
 import subprocess
 import os
-from deep_research_py import deep_research
 
 class Predictor(BasePredictor):
 
@@ -47,6 +46,7 @@ class Predictor(BasePredictor):
     breadth: int = Input(description="Breadth of research", default=4, ge=2, le=10),
     depth: int = Input(description="Depth of research", default=2, ge=1, le=5),
   ) -> str:
+    from deep_research_py import deep_research
     # Set environment variables
     os.environ["OPENAI_API_KEY"] = openrouter_api_key
     os.environ["OPENAI_ENDPOINT"] = "https://openrouter.ai/api/v1"
