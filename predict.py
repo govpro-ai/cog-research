@@ -45,6 +45,7 @@ class Predictor(BasePredictor):
         raise RuntimeError("Failed to find pnpm")
 
     pnpm_path = pnpm_result.stdout.strip()
+    self.pnpm_path = pnpm_path
     print(f"Found pnpm at: {pnpm_path}")
 
     # Run the install command with the full environment setup
@@ -63,6 +64,7 @@ class Predictor(BasePredictor):
 
     # Start background processes with the proper environment
     env_prefix = 'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && '
+    self.env_prefix = env_prefix
 
     # Redis server
     subprocess.Popen(
@@ -71,24 +73,6 @@ class Predictor(BasePredictor):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
-
-    # Workers
-    subprocess.Popen(
-        f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run workers",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-
-    # API server
-    subprocess.Popen(
-        f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run start",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-    import time
-    time.sleep(10)
 
   async def predict(self,
     openrouter_api_key: str = Input(description="OpenRouter API key"),
@@ -105,6 +89,23 @@ class Predictor(BasePredictor):
     os.environ["SEARCHAPI_API_KEY"] = searchapi_api_key
     os.environ["SEARCHAPI_ENGINE"] = "google"
     from deep_research_py import deep_research
+    # Workers
+    subprocess.Popen(
+        f"{self.env_prefix}cd firecrawl/apps/api && {self.pnpm_path} run workers",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    # API server
+    subprocess.Popen(
+        f"{self.env_prefix}cd firecrawl/apps/api && {self.pnpm_path} run start",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    import time
+    time.sleep(10)
 
     # Run deep-research command
     result = await deep_research.deep_research(query, breadth, depth, 1)
