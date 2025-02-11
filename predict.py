@@ -19,7 +19,7 @@ class Predictor(BasePredictor):
         'nvm use 22',
         'npm install -g pnpm'
     ]
-    
+
     setup_result = subprocess.run(
         ' && '.join(setup_commands),
         shell=True,
@@ -27,7 +27,7 @@ class Predictor(BasePredictor):
         text=True,
         executable='/bin/bash'
     )
-    
+
     print("Setup output:", setup_result.stdout)
     print("Setup errors:", setup_result.stderr)
 
@@ -39,11 +39,11 @@ class Predictor(BasePredictor):
         text=True,
         executable='/bin/bash'
     )
-    
+
     if pnpm_result.returncode != 0:
         print("Error finding pnpm:", pnpm_result.stderr)
         raise RuntimeError("Failed to find pnpm")
-    
+
     pnpm_path = pnpm_result.stdout.strip()
     print(f"Found pnpm at: {pnpm_path}")
 
@@ -56,37 +56,39 @@ class Predictor(BasePredictor):
         text=True,
         executable='/bin/bash'
     )
-    
+
     if install_result.returncode != 0:
         print("Error during pnpm install:", install_result.stderr)
         raise RuntimeError("Failed to run pnpm install")
 
     # Start background processes with the proper environment
     env_prefix = 'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && '
-    
+
     # Redis server
     subprocess.Popen(
         f"{env_prefix}cd firecrawl && redis-server",
         shell=True,
-        stdout=subprocess.STDOUT,
-        stderr=subprocess.STDOUT
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
-    
+
     # Workers
     subprocess.Popen(
         f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run workers",
         shell=True,
-        stdout=subprocess.STDOUT,
-        stderr=subprocess.STDOUT
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
-    
+
     # API server
     subprocess.Popen(
         f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run start",
         shell=True,
-        stdout=subprocess.STDOUT,
-        stderr=subprocess.STDOUT
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
+    import time
+    time.sleep(10)
 
   async def predict(self,
     openrouter_api_key: str = Input(description="OpenRouter API key"),
