@@ -96,7 +96,7 @@ class Predictor(BasePredictor):
   ) -> str:
     # Set environment variables
     os.environ["OPENAI_API_KEY"] = openrouter_api_key
-    os.environ["OPENAI_ENDPOINT"] = "https://openrouter.ai/api/v1"
+    os.environ["OPENAI_API_ENDPOINT"] = "https://openrouter.ai/api/v1"
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
     from deep_research_py import deep_research

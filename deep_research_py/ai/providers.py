@@ -9,7 +9,7 @@ import openai
 
 def create_openai_client(api_key: str, base_url: Optional[str] = None) -> openai.OpenAI:
     return openai.OpenAI(
-        api_key=api_key, base_url=base_url or "https://api.openai.com/v1"
+        api_key=api_key, base_url=base_url or "https://openrouter.ai/api/v1"
     )
 
 
