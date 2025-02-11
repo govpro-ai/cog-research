@@ -11,6 +11,11 @@ class Predictor(BasePredictor):
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
 
+    # Debug: Check if directories and executables exist
+    subprocess.run("ls -la /root/.nvm/versions/node/v22.0.0/bin/", shell=True)
+    subprocess.run("which pnpm", shell=True)
+    subprocess.run("echo $PATH", shell=True)
+
     # First run pnpm install and wait for it to complete
     subprocess.run(
       "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm install",
