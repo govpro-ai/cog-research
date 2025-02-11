@@ -240,6 +240,8 @@ async def deep_research(
     serp_queries = await generate_serp_queries(
         query=query, num_queries=breadth, learnings=learnings
     )
+    for serp_query in serp_queries:
+        print("Search generated:", serp_query.query)
 
     # Create a semaphore to limit concurrent requests
     semaphore = asyncio.Semaphore(concurrency)
@@ -251,7 +253,8 @@ async def deep_research(
                 result = await firecrawl.search(
                     serp_query.query, timeout=15000, limit=5
                 )
-
+                print("Query:", serp_query.query)
+                print("Result:", result)
                 # Collect new URLs
                 new_urls = [
                     item.get("url") for item in result["data"] if item.get("url")
