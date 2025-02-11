@@ -109,6 +109,7 @@ class Predictor(BasePredictor):
 
     # Run deep-research command
     result = await deep_research.deep_research(query, breadth, depth, 1)
+    report = await deep_research.write_final_report(query, result["learnings"], result["visited_urls"])
 
     output = "# Learnings\n\n"
     for learning in result["learnings"]:
@@ -117,5 +118,5 @@ class Predictor(BasePredictor):
     for url in result["visited_urls"]:
       output += url + "\n\n"
 
-    return output
+    return report + "\n\n--------------------------\n\n" + output
 
