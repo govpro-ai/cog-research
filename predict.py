@@ -11,6 +11,30 @@ class Predictor(BasePredictor):
     os.environ["FIRECRAWL_KEY"] = "stub"
     os.environ["FIRECRAWL_BASE_URL"] = "http://localhost:3002"
 
+    # Source NVM and set up Node environment
+    subprocess.run(
+        'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"',
+        shell=True,
+        executable='/bin/bash'
+    )
+
+    # Debug: Check environment after NVM setup
+    result = subprocess.run("which node",
+        shell=True,
+        capture_output=True,
+        text=True
+    )
+    print("node location:", result.stdout, result.stderr)
+
+    # Use the full path to pnpm from npm global packages
+    pnpm_path = subprocess.run(
+        'export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && which pnpm',
+        shell=True,
+        capture_output=True,
+        text=True,
+        executable='/bin/bash'
+    ).stdout.strip()
+
     # Debug: Check if directories and executables exist with explicit output capture
     result = subprocess.run("ls -la /root/.nvm/versions/node/v22.0.0/bin/",
       shell=True,
@@ -18,12 +42,6 @@ class Predictor(BasePredictor):
       text=True
     )
     print("ls output:", result.stdout, result.stderr)
-    result = subprocess.run("which pnpm",
-      shell=True,
-      capture_output=True,
-      text=True
-    )
-    print("which pnpm output:", result.stdout, result.stderr)
     result = subprocess.run("echo $PATH",
       shell=True,
       capture_output=True,
@@ -31,33 +49,33 @@ class Predictor(BasePredictor):
     )
     print("PATH output:", result.stdout, result.stderr)
 
-    # First run pnpm install and wait for it to complete
+    # Update the commands to use the found pnpm path
     subprocess.run(
-      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm install",
-      shell=True,
-      check=True  # This will raise an exception if the command fails
+        f"cd firecrawl/apps/api && {pnpm_path} install",
+        shell=True,
+        check=True  # This will raise an exception if the command fails
     )
     # Start background processes
     # Redis server
     subprocess.Popen(
-      "cd firecrawl && redis-server",
-      shell=True,
-      stdout=subprocess.DEVNULL,
-      stderr=subprocess.DEVNULL
+        "cd firecrawl && redis-server",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
     )
     # Workers
     subprocess.Popen(
-      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm run workers",
-      shell=True,
-      stdout=subprocess.DEVNULL,
-      stderr=subprocess.DEVNULL
+        f"cd firecrawl/apps/api && {pnpm_path} run workers",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
     )
     # API server
     subprocess.Popen(
-      "cd firecrawl/apps/api && /root/.nvm/versions/node/v22.0.0/bin/pnpm run start",
-      shell=True,
-      stdout=subprocess.DEVNULL,
-      stderr=subprocess.DEVNULL
+        f"cd firecrawl/apps/api && {pnpm_path} run start",
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
     )
 
   async def predict(self,
