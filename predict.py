@@ -68,24 +68,24 @@ class Predictor(BasePredictor):
     subprocess.Popen(
         f"{env_prefix}cd firecrawl && redis-server",
         shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stdout=subprocess.STDOUT,
+        stderr=subprocess.STDOUT
     )
     
     # Workers
     subprocess.Popen(
         f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run workers",
         shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stdout=subprocess.STDOUT,
+        stderr=subprocess.STDOUT
     )
     
     # API server
     subprocess.Popen(
         f"{env_prefix}cd firecrawl/apps/api && {pnpm_path} run start",
         shell=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stdout=subprocess.STDOUT,
+        stderr=subprocess.STDOUT
     )
 
   async def predict(self,
